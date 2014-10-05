@@ -1,0 +1,37 @@
+---
+- name: subscribe to EPEL and IUS repositories
+  yum: name={{ item }}
+  with_items:
+    - "http://dl.iuscommunity.org/pub/ius/stable/CentOS/6/x86_64/epel-release-6-5.noarch.rpm"
+    - "http://dl.iuscommunity.org/pub/ius/stable/CentOS/6/x86_64/ius-release-1.0-13.ius.centos6.noarch.rpm"
+  sudo: yes
+
+- name: update all packages
+  yum: name=* state=latest
+  sudo: yes
+
+- name: install depedencies
+  yum: name={{ item }}
+  with_items:
+    - httpd
+    - mysql-server
+    - MySQL-python # depedency for ansible mysql modules
+    - php
+    - php-mysql
+  sudo: yes
+
+- name: start database
+  service: name=mysqld state=started enabled=yes
+  sudo: yes
+
+- name: create database
+  mysql_db: name=webapp 
+  sudo: yes
+
+- name: create database user
+  mysql_user: name=webapp password=webapp priv=webapp.*:ALL
+  sudo: yes
+
+- name: start webserver
+  service: name=httpd state=started enabled=yes
+  sudo: yes
